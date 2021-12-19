@@ -1,0 +1,3 @@
+This is a dapp built on the celo blockchain that would help a company issue digital parking tickets. The person in charge of the account would be able to mint tickets according to spaces in the parking lot and push it to the public marketplace for users to purchase. Owners of the tickets can revoke their tickets if they have no use for it and it goes back to the main shop for other users to book. This enables a continuous flow of the tickets.
+
+https://keen-hawking-658ac6.netlify.app/
