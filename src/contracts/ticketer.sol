@@ -23,22 +23,36 @@ contract DriveThrough{
         bool booked;
     }
 
-    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
-    address internal adminAddress = ; // replace with your own address
+   
+
+    address internal cUsdTokenAddress ;
+    address internal adminAddress; // replace with your own address
 
     uint ticketLength = 0;
-    mapping(uint => Ticket) tickets;
+    mapping(uint => Ticket) public tickets;
+
+    
 
     modifier isAdmin(){
         require(msg.sender == adminAddress,"Only the admin can access this");
         _;
     }
 
+    modifier notAdmin(){
+         require(msg.sender != adminAddress,"Cannot be admin");
+        _;
+    }
+
+     constructor(){
+        adminAddress = msg.sender;
+        cUsdTokenAddress =  0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+    }
+
     function addTicket(
         string memory _ticketNo,
         string memory _category, 
         uint _price       
-    )public isAdmin(){
+    )public isAdmin {
         Ticket storage _tickets = tickets[ticketLength];
         _tickets.owner = payable(msg.sender);
         _tickets.ticketNumber = _ticketNo;
@@ -49,26 +63,22 @@ contract DriveThrough{
         ticketLength++;
     }
 
-
-    function getTickets(uint _index)public view returns(
-        address payable,
-        string memory,
-        string memory,
-        uint,
-        bool
-    ){
-        Ticket storage _tickets = tickets[_index];
-        return(
-            _tickets.owner,
-            _tickets.ticketNumber,
-            _tickets.category,
-            _tickets.price,
-            _tickets.booked
-        );
+    function updateTicket(
+        uint _ticketId,
+          string memory _ticketNo,
+        string memory _category, 
+        uint _price       
+    ) public isAdmin {
+         Ticket storage _tickets = tickets[_ticketId];
+        _tickets.ticketNumber = _ticketNo;
+        _tickets.category = _category;
+        _tickets.price = _price;
     }
+ 
 
-    function bookTicket(uint _index) public {
-        require(msg.sender != adminAddress, "Cannot be admin");
+   
+
+    function bookTicket(uint _index) notAdmin public {
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                     msg.sender,
@@ -82,9 +92,16 @@ contract DriveThrough{
         tickets[_index].booked = true;
     }
 
-    function revokeTicket(uint _index)public{
-        require(msg.sender != adminAddress, "Cannot be admin");
+    function revokeTicket(uint _index)  public{
+
+        Ticket storage _tickets = tickets[_index];
+        require(_tickets.owner == msg.sender || msg.sender == adminAddress, "Only the owner of this ticket can call this");
         tickets[_index].booked = false;
+    }
+
+
+    function revokeOwnership(address _address) isAdmin public{
+        adminAddress = _address;
     }
 
     function isUserAdmin(address _address) public view returns (bool){
