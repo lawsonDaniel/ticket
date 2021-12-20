@@ -9,11 +9,11 @@ import BigNumber from "bignumber.js";
 
 import ticketer from "./contracts/ticketer.abi.json";
 import IERC from "./contracts/ierc.abi.json";
-
-const ERC20_DECIMALS = 18;
-
-const contractAddress = "0x195608F087cC1B64C951Bde7278B04F78928116d";
-const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
+import {
+  ERC20_DECIMALS,
+  contractAddress,
+  cUSDContractAddress,
+} from "./utils/constants";
 
 function App() {
   const [contract, setcontract] = useState(null);
@@ -37,7 +37,6 @@ function App() {
 
         await setAddress(user_address);
         await setKit(kit);
-        console.log(user_address);
       } catch (error) {
         console.log(error);
       }
@@ -64,7 +63,7 @@ function App() {
 
     for (let index = 0; index < ticketLength; index++) {
       let _ticket = new Promise(async (resolve, reject) => {
-        let tick = await contract.methods.getTickets(index).call();
+        let tick = await contract.methods.tickets(index).call();
         resolve({
           index: index,
           owner: tick[0],
@@ -88,7 +87,9 @@ function App() {
   const bookTicket = async (_index) => {
     const cUSDContract = new kit.web3.eth.Contract(IERC, cUSDContractAddress);
     try {
-      const price = new BigNumber(tickets[_index].price).shiftedBy(ERC20_DECIMALS).toString();
+      const price = new BigNumber(tickets[_index].price)
+        .shiftedBy(ERC20_DECIMALS)
+        .toString();
       await cUSDContract.methods
         .approve(contractAddress, price)
         .send({ from: address });
